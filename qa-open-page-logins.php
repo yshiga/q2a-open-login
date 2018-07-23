@@ -503,30 +503,11 @@ class qa_open_logins_page {
 			}
 			
 			$qa_content['custom_merge']="$title <p>$p</p>";
-			$qa_content['form_merge']=array(
-				'tags' => 'ENCTYPE="multipart/form-data" METHOD="POST" ACTION="'.qa_self_html().'" CLASS="open-login-others"',
-				'style' => 'wide',
-				'buttons' => array(
-					'save' => array(
-						'tags' => 'id="open_login_submit" onClick="qa_show_waiting_after(this, false);" style="display: none"',
-						'note' => qa_lang_html('plugin_open/action_info_1'),
-						'label' => qa_lang_html('plugin_open/continue'),
-					),
-				),
-				'hidden' => array(
-					'domerge' => '1',
-					'confirm' => $disp_conf,
-					'to' => qa_get('to'),
-				),
-			);
-			
+		
 			$data = array(); 
-			$select = '<option value="0">' . qa_lang_html('plugin_open/select_base') . '</option>' .
-				'<option value="'. $userid . '" title="' . qa_html($useraccount['handle']) .'">' . qa_html($useraccount['handle']) . ' (' . $useraccount['points'] . ' ' . qa_lang_html('admin/points') . ' - ' . qa_lang_html('plugin_open/current_account') . ')</option>';
 			foreach($otherlogins as $i => $login) {
 				$type = 'login';
 				$name = qa_html($login['details']['handle']);
-				$points = $login['details']['points'];
 				
 				if(count($login['logins'])==0) { // this is a regular site login, not an openid login
 					$type = 'user';
@@ -534,147 +515,20 @@ class qa_open_logins_page {
 				$login_providers = ($type == 'user' ? strtolower(qa_lang_html('plugin_open/password')) : '<strong>' . implode(', ', $login['logins']) . '</strong>' );
 				
 				$data["f$i"] = array(
-					'label' => '<strong>' . $name . '</strong> (' . $points . ' ' . qa_lang_html('admin/points') . ', ' . 
-						strtolower(qa_lang_html_sub('plugin_open/login_using', '')) . $login_providers . ')',
-					'tags' => 'name="user_' . $login['details']['userid'] . '" value="' . $login['details']['userid'] . '" style="visibility: hidden" checked="checked" rel="' . $i . '" onchange="OP_checkClicked(this)"',
-					'type' => 'checkbox',
+					'label' => '<strong><a href="'. qa_opt('site_url') . 'user/'. $name .'" target="_blank">' . $name . '</a></strong>  (' . 
+						strtolower($login_providers.qa_lang_html_sub('plugin_open/login_using', '')) . ')',
+					'type' => 'static',
 					'style' => 'tall'
 				);
-				$select .= '<option value="' . $login['details']['userid'] . '" title="' . $name .'">' . $name . ' (' . $points . ' ' . qa_lang_html('admin/points') . ')</option>';
 			}
-			$data['space'] = array(
-				'label' => '<br>' . qa_lang_html('plugin_open/choose_action'),
+			$data[] = array(
+				'label' => '<br><br><a href="'. qa_opt('site_url') .'">>トップページに移動</a>',
 				'type' => 'static',
 				'style' => 'tall'
 			);
+
 			
-			$ac1html = '<div class="opacxhtml qa-form-tall-buttons" id="ac1html" style="display: none;">' . 
-						qa_lang_html('plugin_open/merge_all_first') . ' ' . qa_lang_html('plugin_open/merge_note') . '<br /><br />' .
-						qa_lang_html('plugin_open/select_base_note') . '<br /><select name="base1" onchange="OP_baseSelected(this)">' . $select . '</select></div>';
-			$ac2html = '<div class="opacxhtml qa-form-tall-buttons" id="ac2html" style="display: none;">' .
-						qa_lang_html('plugin_open/select_merge_first') . ' ' . qa_lang_html('plugin_open/merge_note') . '<br /><br />' .
-						qa_lang_html('plugin_open/select_base_note') . '<br /><select name="base2" onchange="OP_baseSelected(this)">' . $select . '</select></div>';
-			$ac3html = '<div class="opacxhtml qa-form-tall-buttons" id="ac3html" style="display: none;">' . qa_lang_html('plugin_open/cancel_merge_note') . '</div>';
-			
-			if($disp_conf == null || $disp_conf == 1) {
-				$data['actions1'] = array(
-					'label' => ' &nbsp; &nbsp; <strong><a href="javascript:;" onclick="OP_actionSelected(1, \'#ac1html\')">&raquo; ' . qa_lang_html('plugin_open/merge_all') . '</a></strong>' . $ac1html,
-					'type' => 'static',
-					'style' => 'tall'
-				);
-				$data['actions2'] = array(
-					'label' => ' &nbsp; &nbsp; <strong><a href="javascript:;" onclick="OP_actionSelected(2, \'#ac2html\')">&raquo; ' . qa_lang_html('plugin_open/select_merge') . '</a></strong>' . $ac2html,
-					'type' => 'static',
-					'style' => 'tall'
-				);
-				if($disp_conf == 1) {
-					$data['actions3'] = array(
-						'label' => ' &nbsp; &nbsp; <strong><a href="javascript:;" onclick="OP_actionSelected(0, \'#ac3html\')">&raquo; ' . qa_lang_html('plugin_open/cancel_merge') . '</a></strong>' . $ac3html,
-						'type' => 'static',
-						'style' => 'tall'
-					);
-				}
-			} else if($disp_conf == 2) {
-				$data['actions1'] = array(
-					'label' => ' &nbsp; &nbsp; <strong><a href="javascript:;" onclick="OP_actionSelected(1, \'#ac1html\')">&raquo; ' . qa_lang_html('plugin_open/link_all') . '</a></strong>' . $ac1html,
-					'type' => 'static',
-					'style' => 'tall'
-				);
-				$data['actions3'] = array(
-					'label' => ' &nbsp; &nbsp; <strong><a href="javascript:;" onclick="OP_actionSelected(0, \'#ac3html\')">&raquo; ' . qa_lang_html('plugin_open/cancel_link') . '</a></strong>' . $ac3html,
-					'type' => 'static',
-					'style' => 'tall'
-				);
-			}
-			$qa_content['form_merge']['fields'] = $data;
-			$qa_content['customscript'] = '<script type="text/javascript">
-				function OP_actionSelected(i, divid) {
-					$(".opacxhtml").slideUp();
-					if(i != 2 || op_last_action == 2) {
-						$(".qa-main form.open-login-others input[type=checkbox]").css("visibility", "hidden");
-					}
-					
-					if(op_last_action == i) {
-						OP_baseSelected();
-						op_last_action = -1;
-						return;
-					}
-					op_last_action = i;
-					$(divid).slideDown();
-					$(".qa-main form.open-login-others>input[name=domerge]").attr("value", i);
-					
-					if(i > 0) {
-						$(".qa-main form.open-login-others input[type=checkbox]").attr("checked", "checked");
-						if(i == 2) {
-							$(".qa-main form.open-login-others input[type=checkbox]").css("visibility", "visible");
-							$(".qa-main form.open-login-others select[name=base2]").html( $(".qa-main form.open-login-others select[name=base1]").html() );
-						}
-						sel = $(".qa-main form.open-login-others select[name=base" + i +"]").get(0);
-						sel.selectedIndex = 0;
-						OP_baseSelected(sel);
-					} else {
-						$(".qa-main form.open-login-others span.qa-form-wide-note").html("' . qa_lang_html('plugin_open/action_info_2') . '"); 
-						$("#open_login_submit").show(); 
-						$("#open_login_submit").attr("disabled", false);
-					}
-				}
-				
-				function OP_baseSelected(sel) {
-					if(!sel || sel.selectedIndex == 0) {
-						if(sel) {
-							$(".qa-main form.open-login-others span.qa-form-wide-note").html("' . qa_lang_html('plugin_open/action_info_3') . '")
-						} else {
-							$(".qa-main form.open-login-others span.qa-form-wide-note").html("' . qa_lang_html('plugin_open/action_info_1') . '")
-						}
-						$("#open_login_submit").hide()
-						$("#open_login_submit").attr("disabled", "disabled")
-					} else {
-						if(OP_accValid()) {
-							nam = $("option:selected", sel).attr("title")
-							$(".qa-main form.open-login-others span.qa-form-wide-note").html("<strong>" + nam + "</strong> '  . qa_lang_html('plugin_open/action_info_4') . '")
-							$("#open_login_submit").show()
-							$("#open_login_submit").attr("disabled", false)
-						}
-					}
-				}
-				
-				function OP_checkClicked(check) {
-					' . ($disp_conf == 2 ? '/* empty */' : '
-					var rel = $(check).attr("rel")
-					var id = $(check).attr("value")
-					var chk = $(check).attr("checked")
-					$(".qa-main form.open-login-others select[name=base2]").get(0).selectedIndex = 0
-					if(chk) {
-						$(".qa-main form.open-login-others select[name=base2] option[value=" + id + "]").show()
-					} else {
-						$(".qa-main form.open-login-others select[name=base2] option[value=" + id + "]").hide()
-					}
-					OP_accValid() ') . '
-				}
-				
-				function OP_accValid() {
-					if(op_last_action != 2) {
-						$(".qa-main form.open-login-others input[type=checkbox]").attr("checked", "checked")
-						return true
-					}
-					
-					someSel = false 
-					$(".qa-main form.open-login-others input[type=checkbox]").each(function(i, o) { 
-						someSel = someSel || $(o).attr("checked") == "checked"
-					});
-					
-					$("#open_login_submit").hide();
-					$("#open_login_submit").attr("disabled", "disabled");
-					if(!someSel) { // nothing selected
-						$(".qa-main form.open-login-others span.qa-form-wide-note").html("' . qa_lang_html('plugin_open/action_info_5') . '");
-						return false;
-					} else {
-						$(".qa-main form.open-login-others span.qa-form-wide-note").html("' . qa_lang_html('plugin_open/action_info_3') . '");
-						return true;
-					}
-				}
-			</script>';
-			$qa_content['script_onloads'][]='$(function(){ OP_baseSelected() });';
+ 			$qa_content['form_merge']['fields'] = $data;
 			$qa_content['script_var']['op_last_action'] = -1;
 			return true;
 		}
