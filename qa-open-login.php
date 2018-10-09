@@ -108,7 +108,7 @@ class qa_open_login {
 				$user_created=qa_get_logged_in_user_field('created');
 				$user_login=qa_get_logged_in_user_field('loggedin');
 				if (($user_login - $usercreated) <= 30) {
-					$topath = htmlspecialchars('ask?slogin='.strtolower($this->provider));
+					$topath = 'welcome';
 				}
 				if($duplicates > 0) {
 					qa_redirect_raw(qa_opt('site_url') . 'logins?confirm=1&to='.$topath);
