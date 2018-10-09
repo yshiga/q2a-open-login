@@ -107,7 +107,7 @@ class qa_open_login {
 				// ユーザー作成からログインまでが３０秒以内は新規登録とみなす
 				$user_created=qa_get_logged_in_user_field('created');
 				$user_login=qa_get_logged_in_user_field('loggedin');
-				if (($user_login - $usercreated) <= 30) {
+				if (($user_login - $user_created) <= 30) {
 					$topath = 'welcome';
 				}
 				if($duplicates > 0) {
